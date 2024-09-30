@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, Pressable, Clipboard, Linking } from 'react-native';
 import styles from '../styles/styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -42,6 +42,16 @@ const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
     }
   };
 
+  const handleCopyPress = () => {
+    Clipboard.setString("code");
+    Alert.alert("Copied to clipboard!", "You can now paste it anywhere.");
+  };
+
+  const handleLinkPress = () => {
+    Linking.openURL("https://makedbyryan.tech")
+      .catch((err) => Alert.alert("Error", "Failed to open link."));
+  };
+
   return (
     <View>
       <Text style={styles.TextBelow}>Enter Your Code Below</Text>
@@ -57,6 +67,13 @@ const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
           <Text style={styles.submitButtonText}>Save Code</Text>
         </TouchableOpacity>
       </View>
+      <Pressable onPress={handleCopyPress}>
+
+      <Text style={styles.TextBelow}>To try a code for test do "code" and click save</Text>
+      </Pressable>
+      <Pressable style={styles.submitButton} onPress={handleLinkPress}>
+        <Text style={styles.submitButtonText}>click here to generate your code</Text>
+      </Pressable>
     </View>
   );
 };

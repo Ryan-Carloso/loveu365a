@@ -134,6 +134,15 @@ export const styles = StyleSheet.create({
     color: '#555',
     fontWeight: 'bold',
   },
+  copyText: {
+    color: 'blue', // Color for the copied text
+    textDecorationLine: 'underline', // Underline to indicate it's clickable
+    marginTop: 10, // Space between elements
+  },
+  linkText: {
+    color: 'green', // Color for the link text
+    marginTop: 10, // Space between elements
+  },
   toggleButton: {
     padding: 10,
     backgroundColor: '#D6336C',
@@ -148,10 +157,14 @@ export const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#D6336C',
     borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   submitButtonText: {
     color: '#FFF',
     fontWeight: 'bold',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

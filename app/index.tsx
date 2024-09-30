@@ -34,22 +34,6 @@ const App: React.FC = () => {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   useEffect(() => {
-    const requestPermissions = async () => {
-      const { status } = await Notifications.getPermissionsAsync();
-      console.log('Current permission status:', status);
-      if (status !== 'granted') {
-        const { status: newStatus } = await Notifications.requestPermissionsAsync();
-        console.log('New permission status:', newStatus);
-        if (newStatus !== 'granted') {
-          Alert.alert('Permission not granted', 'You need to enable notifications in settings.');
-        }
-      }
-    };
-
-    requestPermissions();
-  }, []);
-
-  useEffect(() => {
     const loadCode = async () => {
       try {
         const storedCode = await AsyncStorage.getItem('userCode');
@@ -66,21 +50,24 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    // Change elogio and schedule notification every 24 hours
+    const interval = setInterval(async () => {
       if (elogiosArray.length > 0 && imageUrls.length > 0) {
         console.log('Changing elogio and image');
-        setCurrentElogioIndex((prevIndex) => (prevIndex + 1) % elogiosArray.length); // Change elogio index
-        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imageUrls.length); // Change image index
+        setCurrentElogioIndex((prevIndex) => (prevIndex + 1) % elogiosArray.length);
+        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imageUrls.length);
       }
-    }, 1800); // Change this to 18000000 for 5 hours in milliseconds
+    }, 86400000); // 24 hours in milliseconds
 
     return () => clearInterval(interval);
   }, [elogiosArray, imageUrls]);
 
   useEffect(() => {
     if (elogiosArray.length > 0) {
-      setCurrentElogio({ text: elogiosArray[currentElogioIndex] });
-      scheduleNotification(); // Reschedule notification on elogio change
+      const newElogio = elogiosArray[currentElogioIndex];
+      setCurrentElogio({ text: newElogio });
+      // Update the notification with the new elogio
+      scheduleRecurringNotification(newElogio);
     }
   }, [currentElogioIndex, elogiosArray]);
 
@@ -106,7 +93,7 @@ const App: React.FC = () => {
         }
       );
 
-      console.log('API Response:', response.data); // Log the API response
+      console.log('API Response:', response.data);
 
       if (response.data.length > 0) {
         const fetchedData: User = response.data[0];
@@ -120,7 +107,7 @@ const App: React.FC = () => {
             .match(/"([^"]+)"/g)
             ?.map((elogio) => elogio.replace(/"/g, '').trim());
 
-          console.log('Elogios fetched:', elogiosText); // Log elogios
+          console.log('Elogios fetched:', elogiosText);
           if (elogiosText) {
             setElogiosArray(elogiosText);
             setCurrentElogio({ text: elogiosText[0] });
@@ -130,7 +117,7 @@ const App: React.FC = () => {
         }
 
         const imageUrls: string[] = JSON.parse(fetchedData.image_urls);
-        console.log('Image URLs fetched:', imageUrls); // Log image URLs
+        console.log('Image URLs fetched:', imageUrls);
         if (imageUrls.length > 0) {
           setImageUrls(imageUrls);
           setCurrentImage(imageUrls[0]);
@@ -142,6 +129,9 @@ const App: React.FC = () => {
         if (!startDate) {
           setStartDate(new Date(fetchedData.date_time));
         }
+
+        // Schedule notifications after fetching data
+        await setupNotifications(elogiosArray[0]); // Schedule with the first elogio
       } else {
         console.log('No data found for the given code.');
         Alert.alert('Error', 'No data found for the given code.');
@@ -152,33 +142,96 @@ const App: React.FC = () => {
     }
   };
 
+  const setupNotifications = async (initialElogio: string) => {
+    try {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+
+      console.log('Existing permission status:', existingStatus);
+
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+        console.log('New permission status:', status);
+      }
+
+      if (finalStatus !== 'granted') {
+        Alert.alert('Permission not granted', 'You need to enable notifications in settings.');
+        return false;
+      }
+
+      await scheduleInitialNotification();
+      await scheduleRecurringNotification(initialElogio);
+      console.log('Initial and recurring notifications scheduled.');
+      return true;
+    } catch (error) {
+      console.error('Error setting up notifications:', error);
+      Alert.alert('Error', 'Failed to set up notifications. Please try again.');
+      return false;
+    }
+  };
+
+  const scheduleInitialNotification = async () => {
+    try {
+      const notificationId = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Love You 365 Days a Year! 💖",
+          body: "My love, this app is a sweet reminder of how much you mean to me",
+        },
+        trigger: {
+          seconds: 60, // 1 minute after submitting the code
+        },
+      });
+      console.log('Initial notification scheduled successfully. ID:', notificationId);
+    } catch (error) {
+      console.error('Error scheduling initial notification:', error);
+      Alert.alert('Error', 'Failed to schedule welcome notification. Please try again.');
+    }
+  };
+
+  const scheduleRecurringNotification = async (elogioText: string) => {
+    try {
+      // Cancel any existing recurring notifications
+      const existingNotificationId = await AsyncStorage.getItem('recurringNotificationId');
+      if (existingNotificationId) {
+        await Notifications.cancelScheduledNotificationAsync(existingNotificationId);
+        console.log('Canceled existing recurring notification with ID:', existingNotificationId);
+      }
+
+      // Schedule a new recurring notification with the current elogio
+      const notificationId = await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Daily Compliment",
+          body: elogioText, // Use the current elogio for the notification body
+        },
+        trigger: {
+          seconds: 86400, // 24 hours
+          repeats: true,
+        },
+      });
+
+      console.log('Recurring notification scheduled successfully. ID:', notificationId);
+      await AsyncStorage.setItem('recurringNotificationId', notificationId);
+    } catch (error) {
+      console.error('Error scheduling recurring notification:', error);
+      Alert.alert('Error', 'Failed to schedule daily reminder. Please try again.');
+    }
+  };
+
   const handleCodeSubmit = async (newCode: string): Promise<void> => {
     try {
       await AsyncStorage.setItem('userCode', newCode);
       setCode(newCode);
       await fetchData(newCode);
-      Alert.alert('Success', 'Code saved and data fetched successfully!');
+      const notificationsSet = await setupNotifications(elogiosArray[0]);
+      if (notificationsSet) {
+        Alert.alert('Success', 'Code saved, data fetched, and notifications set up successfully!');
+      } else {
+        Alert.alert('Partial Success', 'Code saved and data fetched, but notifications could not be set up.');
+      }
     } catch (error: any) {
-      console.error('Error saving code:', error.message);
-      Alert.alert('Error', 'Could not save code. Please try again.');
-    }
-  };
-
-  const scheduleNotification = async () => {
-    try {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "Time for a new elogio!",
-          body: currentElogio ? currentElogio.text : "No elogios available.",
-          icon: 'assets/icon.png', // caminho para o seu ícone
-        },
-        trigger: {
-          seconds: 1, //test 
-        },
-      });
-      console.log('Notification scheduled successfully.');
-    } catch (error) {
-      console.error('Error scheduling notification:', error);
+      console.error('Error in handleCodeSubmit:', error.message);
+      Alert.alert('Error', 'Could not process your request. Please try again.');
     }
   };
 

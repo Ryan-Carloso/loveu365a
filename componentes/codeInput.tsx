@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, Pressable, Clipboard, Linking } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, Pressable, Clipboard, Modal } from 'react-native';
+import { WebView } from 'react-native-webview'; // Correct import
 import styles from '../styles/styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -9,8 +10,8 @@ interface CodeInputProps {
 
 const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
   const [code, setCode] = useState<string>('');
+  const [isWebViewVisible, setWebViewVisible] = useState<boolean>(false);
 
-  // Load code from AsyncStorage when the component mounts
   useEffect(() => {
     const loadStoredCode = async () => {
       try {
@@ -33,7 +34,6 @@ const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
     }
 
     try {
-      // Delegate handling code submission to the parent component
       await onCodeSubmit(code);
       Alert.alert('Success', 'Code saved successfully!');
     } catch (error) {
@@ -47,33 +47,41 @@ const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
     Alert.alert("Copied to clipboard!", "You can now paste it anywhere.");
   };
 
-  const handleLinkPress = () => {
-    Linking.openURL("https://makedbyryan.tech")
-      .catch((err) => Alert.alert("Error", "Failed to open link."));
+  const handleWebViewToggle = () => {
+    setWebViewVisible(!isWebViewVisible);
   };
 
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <Text style={styles.TextBelow}>Enter Your Code Below</Text>
       <View style={styles.codeInputContainer}>
         <TextInput
           style={styles.TextcodeInput}
           placeholder="Enter your code"
-          value={code}  // Keep the value from AsyncStorage in the input
+          value={code}
           onChangeText={setCode}
-          secureTextEntry={false} // Always show the code
+          secureTextEntry={false}
         />
         <TouchableOpacity style={styles.submitButton} onPress={handleCodeSubmit}>
           <Text style={styles.submitButtonText}>Save Code</Text>
         </TouchableOpacity>
       </View>
+      
       <Pressable onPress={handleCopyPress}>
+        <Text style={styles.TextBelow}>To try a code for test do "code" and click save</Text>
+      </Pressable>
+      <Pressable style={styles.submitButton} onPress={handleWebViewToggle}>
+        <Text style={styles.submitButtonText}>Click here to generate your code</Text>
+      </Pressable>
 
-      <Text style={styles.TextBelow}>To try a code for test do "code" and click save</Text>
-      </Pressable>
-      <Pressable style={styles.submitButton} onPress={handleLinkPress}>
-        <Text style={styles.submitButtonText}>click here to generate your code</Text>
-      </Pressable>
+      <Modal visible={isWebViewVisible} animationType="slide">
+        <View style={{ flex: 1, margin: 5 }}>
+          <WebView source={{ uri: 'https://makedbyryan.tech/submitpagea' }} />
+          <TouchableOpacity onPress={handleWebViewToggle} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 };

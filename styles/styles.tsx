@@ -166,6 +166,17 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  closeButton: {
+    padding: 10,
+    backgroundColor: 'red', // Customize as needed
+    alignItems: 'center',
+    borderRadius: 5,
+    margin: 20,
+  },
+  closeButtonText: {
+    color: 'white', // Customize text color
+    fontWeight: 'bold',
+  },
 });
 
 export default styles;

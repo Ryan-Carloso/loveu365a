@@ -6,6 +6,7 @@ import * as Notifications from 'expo-notifications';
 import styles from '../styles/styles';
 import CodeInput from '../componentes/codeInput';
 import ElapsedTime from '../componentes/elapsedTime';
+import { handleCodeSubmit } from '../util/handlesubmit';
 
 interface Elogio {
   text: string;
@@ -41,6 +42,12 @@ const App: React.FC = () => {
           setCode(storedCode);
           await fetchData(storedCode); // Fetch data once when the code is loaded
         }
+
+        // Initialize the notification index if it doesn't exist
+        const storedIndex = await AsyncStorage.getItem('notificationIndex');
+        if (!storedIndex) {
+          await AsyncStorage.setItem('notificationIndex', '0'); // Start from 0
+        }
       } catch (error: any) {
         console.error('Error loading code:', error.message);
       }
@@ -51,10 +58,19 @@ const App: React.FC = () => {
 
   useEffect(() => {
     // Change elogio and schedule notification every 24 hours
-    const interval = setInterval(async () => {
+    const interval = setInterval(() => {
       if (elogiosArray.length > 0 && imageUrls.length > 0) {
         console.log('Changing elogio and image');
-        setCurrentElogioIndex((prevIndex) => (prevIndex + 1) % elogiosArray.length);
+
+        // Increment the elogio index and handle wrap-around
+        setCurrentElogioIndex((prevIndex) => {
+          const newIndex = (prevIndex + 1) % elogiosArray.length;
+          // Update the elogio based on the new index
+          setCurrentElogio({ text: elogiosArray[newIndex] });
+          scheduleRecurringNotification(elogiosArray[newIndex]); // Schedule with the new elogio
+          return newIndex;
+        });
+
         setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imageUrls.length);
       }
     }, 86400000); // 24 hours in milliseconds
@@ -64,9 +80,10 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (elogiosArray.length > 0) {
+      // Update current elogio when the index changes
       const newElogio = elogiosArray[currentElogioIndex];
       setCurrentElogio({ text: newElogio });
-      // Update the notification with the new elogio
+      // Schedule notifications with the current elogio
       scheduleRecurringNotification(newElogio);
     }
   }, [currentElogioIndex, elogiosArray]);
@@ -80,7 +97,7 @@ const App: React.FC = () => {
   const fetchData = async (randomString: string): Promise<void> => {
     const API_URL = 'https://laqxbdncmapnhorlbbkg.supabase.co/rest/v1/users';
     const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcXhiZG5jbWFwbmhvcmxiYmtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjY4NjE3MjUsImV4cCI6MjA0MjQzNzcyNX0.Zv-JETPTIq8X67KWcdFOG0yK9jtpszt7krJT082WyPU';
-  
+
     try {
       const response: AxiosResponse<User[]> = await axios.get<User[]>(
         `${API_URL}?random_string=eq.${randomString}`,
@@ -92,24 +109,24 @@ const App: React.FC = () => {
           },
         }
       );
-  
+
       console.log('API Response:', response.data);
-  
+
       if (response.data.length > 0) {
         const fetchedData: User = response.data[0];
         console.log('Fetched data from the database:', fetchedData);
-  
+
         const elogiosData: string = fetchedData.elogios;
-  
+
         if (elogiosData) {
           const elogiosText = elogiosData
             .replace(/\\/g, '')
             .match(/"([^"]+)"/g)
             ?.map((elogio) => elogio.replace(/"/g, '').trim());
-  
+
           console.log('Elogios fetched:', elogiosText);
           if (elogiosText && elogiosText.length > 1) {
-            // Ignorar o primeiro elogio
+            // Ignore the first elogio
             const filteredElogios = elogiosText.slice(1);
             setElogiosArray(filteredElogios);
             setCurrentElogio({ text: filteredElogios[0] });
@@ -117,7 +134,7 @@ const App: React.FC = () => {
             console.log('Elogios array is empty.');
           }
         }
-  
+
         const imageUrls: string[] = JSON.parse(fetchedData.image_urls);
         console.log('Image URLs fetched:', imageUrls);
         if (imageUrls.length > 0) {
@@ -126,12 +143,12 @@ const App: React.FC = () => {
         } else {
           console.log('Image URLs array is empty.');
         }
-  
+
         setCoupleName(fetchedData.couplename);
         if (!startDate) {
           setStartDate(new Date(fetchedData.date_time));
         }
-  
+
         // Schedule notifications after fetching data
         await setupNotifications(elogiosArray[0]); // Schedule with the first elogio
       } else {
@@ -143,7 +160,6 @@ const App: React.FC = () => {
       Alert.alert('Error', 'Could not fetch data. Please try again later.');
     }
   };
-  
 
   const setupNotifications = async (initialElogio: string) => {
     try {
@@ -182,7 +198,7 @@ const App: React.FC = () => {
           body: "My love, this app is a sweet reminder of how much you mean to me",
         },
         trigger: {
-          seconds: 60, // 1 minute after submitting the code
+          seconds: 100, // 1 minute after submitting the code for initial testing
         },
       });
       console.log('Initial notification scheduled successfully. ID:', notificationId);
@@ -194,47 +210,35 @@ const App: React.FC = () => {
 
   const scheduleRecurringNotification = async (elogioText: string) => {
     try {
-      // Cancel any existing recurring notifications
-      const existingNotificationId = await AsyncStorage.getItem('recurringNotificationId');
-      if (existingNotificationId) {
-        await Notifications.cancelScheduledNotificationAsync(existingNotificationId);
-        console.log('Canceled existing recurring notification with ID:', existingNotificationId);
-      }
+      // Retrieve the current index from AsyncStorage
+      const storedIndex = await AsyncStorage.getItem('notificationIndex');
+      let currentIndex = storedIndex ? parseInt(storedIndex) : 0;
 
-      // Schedule a new recurring notification with the current elogio
+      // Create the title using the current index
+      const notificationTitle = `Day ${currentIndex + 1}: A reminder that I love you every single day!`; // Incremented by 1 for display
+
       const notificationId = await Notifications.scheduleNotificationAsync({
         content: {
-          title: "Daily Compliment",
-          body: elogioText, // Use the current elogio for the notification body
+          title: notificationTitle,
+          body: elogioText,
         },
         trigger: {
           seconds: 86400, // 24 hours
-          repeats: true,
         },
       });
 
       console.log('Recurring notification scheduled successfully. ID:', notificationId);
-      await AsyncStorage.setItem('recurringNotificationId', notificationId);
+      console.log(notificationTitle)
+      console.log('body:', elogioText)
+      console.log('index:', currentIndex)
+
+
+      // Increment and store the current index for the next notification
+      currentIndex++;
+      await AsyncStorage.setItem('notificationIndex', currentIndex.toString());
     } catch (error) {
       console.error('Error scheduling recurring notification:', error);
-      Alert.alert('Error', 'Failed to schedule daily reminder. Please try again.');
-    }
-  };
-
-  const handleCodeSubmit = async (newCode: string): Promise<void> => {
-    try {
-      await AsyncStorage.setItem('userCode', newCode);
-      setCode(newCode);
-      await fetchData(newCode);
-      const notificationsSet = await setupNotifications(elogiosArray[0]);
-      if (notificationsSet) {
-        Alert.alert('Success', 'Code saved, data fetched, and notifications set up successfully!');
-      } else {
-        Alert.alert('Partial Success', 'Code saved and data fetched, but notifications could not be set up.');
-      }
-    } catch (error: any) {
-      console.error('Error in handleCodeSubmit:', error.message);
-      Alert.alert('Error', 'Could not process your request. Please try again.');
+      Alert.alert('Error', 'Failed to schedule recurring notification. Please try again.');
     }
   };
 
@@ -262,8 +266,8 @@ const App: React.FC = () => {
 
         <ElapsedTime startDate={startDate} />
 
-        <CodeInput onCodeSubmit={handleCodeSubmit} />
-      </ScrollView>
+        <CodeInput onCodeSubmit={(newCode) => handleCodeSubmit(newCode, setCode, fetchData, elogiosArray, setupNotifications)} />
+        </ScrollView>
     </SafeAreaView>
   );
 };

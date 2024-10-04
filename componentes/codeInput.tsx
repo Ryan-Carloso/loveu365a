@@ -70,18 +70,6 @@ const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
       <Pressable onPress={handleCopyPress}>
         <Text style={styles.TextBelow}>To try a code for test do "code" and click save</Text>
       </Pressable>
-      <Pressable style={styles.submitButton} onPress={handleWebViewToggle}>
-        <Text style={styles.submitButtonText}>Click here to generate your code</Text>
-      </Pressable>
-
-      <Modal visible={isWebViewVisible} animationType="slide">
-        <View style={{ flex: 1, margin: 5 }}>
-          <WebView source={{ uri: 'https://makedbyryan.tech/submitpagea' }} />
-          <TouchableOpacity onPress={handleWebViewToggle} style={styles.closeButton}>
-            <Text style={styles.closeButtonText}>Close</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
     </View>
   );
 };

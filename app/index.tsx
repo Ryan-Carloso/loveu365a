@@ -80,7 +80,7 @@ const App: React.FC = () => {
   const fetchData = async (randomString: string): Promise<void> => {
     const API_URL = 'https://laqxbdncmapnhorlbbkg.supabase.co/rest/v1/users';
     const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcXhiZG5jbWFwbmhvcmxiYmtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjY4NjE3MjUsImV4cCI6MjA0MjQzNzcyNX0.Zv-JETPTIq8X67KWcdFOG0yK9jtpszt7krJT082WyPU';
-
+  
     try {
       const response: AxiosResponse<User[]> = await axios.get<User[]>(
         `${API_URL}?random_string=eq.${randomString}`,
@@ -92,30 +92,32 @@ const App: React.FC = () => {
           },
         }
       );
-
+  
       console.log('API Response:', response.data);
-
+  
       if (response.data.length > 0) {
         const fetchedData: User = response.data[0];
         console.log('Fetched data from the database:', fetchedData);
-
+  
         const elogiosData: string = fetchedData.elogios;
-
+  
         if (elogiosData) {
           const elogiosText = elogiosData
             .replace(/\\/g, '')
             .match(/"([^"]+)"/g)
             ?.map((elogio) => elogio.replace(/"/g, '').trim());
-
+  
           console.log('Elogios fetched:', elogiosText);
-          if (elogiosText) {
-            setElogiosArray(elogiosText);
-            setCurrentElogio({ text: elogiosText[0] });
+          if (elogiosText && elogiosText.length > 1) {
+            // Ignorar o primeiro elogio
+            const filteredElogios = elogiosText.slice(1);
+            setElogiosArray(filteredElogios);
+            setCurrentElogio({ text: filteredElogios[0] });
           } else {
             console.log('Elogios array is empty.');
           }
         }
-
+  
         const imageUrls: string[] = JSON.parse(fetchedData.image_urls);
         console.log('Image URLs fetched:', imageUrls);
         if (imageUrls.length > 0) {
@@ -124,12 +126,12 @@ const App: React.FC = () => {
         } else {
           console.log('Image URLs array is empty.');
         }
-
+  
         setCoupleName(fetchedData.couplename);
         if (!startDate) {
           setStartDate(new Date(fetchedData.date_time));
         }
-
+  
         // Schedule notifications after fetching data
         await setupNotifications(elogiosArray[0]); // Schedule with the first elogio
       } else {
@@ -141,6 +143,7 @@ const App: React.FC = () => {
       Alert.alert('Error', 'Could not fetch data. Please try again later.');
     }
   };
+  
 
   const setupNotifications = async (initialElogio: string) => {
     try {

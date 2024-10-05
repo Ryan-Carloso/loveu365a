@@ -16,6 +16,7 @@
     "@expo/vector-icons": "^14.0.2",
     "@react-native-async-storage/async-storage": "^2.0.0",
     "@react-navigation/native": "^6.0.2",
+    "@types/react-native": "^0.72.8",
     "add": "^2.0.6",
     "axios": "^1.7.7",
     "date-fns": "^4.1.0",

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, SafeAreaView, ScrollView, Alert } from 'react-native';
+import { View, Text, Image, SafeAreaView, ScrollView, Alert, Linking } from 'react-native';
 import axios, { AxiosResponse } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
@@ -55,6 +55,38 @@ const App: React.FC = () => {
 
     loadCode();
   }, []);
+
+  useEffect(() => {
+    const handleDeepLink = async (url: string) => {
+      // Check if the URL starts with your scheme
+      if (url.startsWith('loveu365a://')) {
+        const code = url.split('/').pop(); // Extract the code from the URL
+        if (code) {
+          setCode(code);
+          await fetchData(code); // Fetch data with the new code
+        }
+      }
+    };
+  
+    // Add the event listener
+    const subscription = Linking.addEventListener('url', ({ url }) => handleDeepLink(url));
+  
+    // Get the initial URL if the app is opened via a deep link
+    const getInitialURL = async () => {
+      const initialUrl = await Linking.getInitialURL();
+      if (initialUrl) {
+        handleDeepLink(initialUrl);
+      }
+    };
+  
+    getInitialURL();
+  
+    // Clean up the event listener on component unmount
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+  
 
   useEffect(() => {
     // Change elogio and schedule notification every 24 hours

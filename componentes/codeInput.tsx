@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, Pressable, Clipboard, Modal } from 'react-native';
-import { WebView } from 'react-native-webview'; // Correct import
+import { View, Text, TextInput, TouchableOpacity, Alert, Pressable, Clipboard } from 'react-native';
 import styles from '../styles/styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Linking } from 'react-native'; // Import Linking for deep linking
 
 interface CodeInputProps {
   onCodeSubmit: (code: string) => void;
+  initialCode?: string; // Optional prop to pass code externally (e.g., from URL or deep link)
 }
 
 const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
-  const [code, setCode] = useState<string>('');
-  const [isWebViewVisible, setWebViewVisible] = useState<boolean>(false);
+  const [code, setCode] = useState<string>(''); // Start with an empty code
 
   useEffect(() => {
     const loadStoredCode = async () => {
       try {
+        // Load the stored code from AsyncStorage
         const storedCode = await AsyncStorage.getItem('userCode');
         if (storedCode) {
           setCode(storedCode);
@@ -27,6 +28,36 @@ const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
     loadStoredCode();
   }, []);
 
+  useEffect(() => {
+    // Function to handle incoming URLs
+    const handleUrl = (url: string) => {
+      const params = new URLSearchParams(url.split('?')[1]);
+      const inputCode = params.get('input');
+      if (inputCode) {
+        setCode(inputCode); // Set the code from the URL
+      }
+    };
+
+    // Get the initial URL when the app starts
+    const getInitialUrl = async () => {
+      const initialUrl = await Linking.getInitialURL();
+      if (initialUrl) {
+        handleUrl(initialUrl);
+      }
+    };
+
+    getInitialUrl(); // Check if there's an initial URL
+
+    // Subscribe to the URL event
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      handleUrl(url);
+    });
+
+    return () => {
+      subscription.remove(); // Clean up the subscription
+    };
+  }, []);
+
   const handleCodeSubmit = async () => {
     if (code.trim() === '') {
       Alert.alert('Validation Error', 'Please enter a valid code.');
@@ -34,7 +65,8 @@ const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
     }
 
     try {
-      await onCodeSubmit(code);
+      await onCodeSubmit(code); // Call the submit function with the current code
+      await AsyncStorage.setItem('userCode', code); // Store the code locally
       Alert.alert('Success', 'Code saved successfully!');
     } catch (error) {
       console.error('Error saving code:', error.message);
@@ -47,10 +79,6 @@ const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
     Alert.alert("Copied to clipboard!", "You can now paste it anywhere.");
   };
 
-  const handleWebViewToggle = () => {
-    setWebViewVisible(!isWebViewVisible);
-  };
-
   return (
     <View style={{ flex: 1 }}>
       <Text style={styles.TextBelow}>Enter Your Code Below</Text>
@@ -58,7 +86,7 @@ const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
         <TextInput
           style={styles.TextcodeInput}
           placeholder="Enter your code"
-          value={code}
+          value={code}  // Pre-filled with the stored or passed code
           onChangeText={setCode}
           secureTextEntry={false}
         />
@@ -68,7 +96,7 @@ const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
       </View>
       
       <Pressable onPress={handleCopyPress}>
-        <Text style={styles.TextBelow}>To try a code for test do "code" and click save</Text>
+        <Text style={styles.TextBelow}>To try a code for test, type "code" and click save</Text>
       </Pressable>
     </View>
   );

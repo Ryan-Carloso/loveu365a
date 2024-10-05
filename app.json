@@ -14,7 +14,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ryancarlos11.loveu365a"
+      "bundleIdentifier": "com.ryancarlos11.loveu365a",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": ["loveu365a"] 
+          }
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {

@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, Pressable, Clipboard } from 'react-native';
 import styles from '../styles/styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Linking } from 'react-native'; // Import Linking for deep linking
+import { Linking } from 'react-native';
 
 interface CodeInputProps {
   onCodeSubmit: (code: string) => void;
-  initialCode?: string; // Optional prop to pass code externally (e.g., from URL or deep link)
 }
 
 const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
@@ -30,11 +29,20 @@ const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
 
   useEffect(() => {
     // Function to handle incoming URLs
-    const handleUrl = (url: string) => {
+    const handleUrl = async (url: string) => {
       const params = new URLSearchParams(url.split('?')[1]);
       const inputCode = params.get('input');
+      
       if (inputCode) {
-        setCode(inputCode); // Set the code from the URL
+        const storedCode = await AsyncStorage.getItem('userCode');
+        
+        if (inputCode !== storedCode) { // Check if the incoming code is different
+          await AsyncStorage.clear(); // Clear AsyncStorage if the codes are different
+          setCode(inputCode); // Set the new code from the URL
+          Alert.alert('New Code Received', `Code set to: ${inputCode}`);
+        } else {
+          Alert.alert('Same Code', 'The received code is the same as the stored code.');
+        }
       }
     };
 
@@ -75,7 +83,7 @@ const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
   };
 
   const handleCopyPress = () => {
-    Clipboard.setString("code");
+    Clipboard.setString(code); // Copy the current code to clipboard
     Alert.alert("Copied to clipboard!", "You can now paste it anywhere.");
   };
 
@@ -86,7 +94,7 @@ const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
         <TextInput
           style={styles.TextcodeInput}
           placeholder="Enter your code"
-          value={code}  // Pre-filled with the stored or passed code
+          value={code} // Pre-filled with the stored or passed code
           onChangeText={setCode}
           secureTextEntry={false}
         />

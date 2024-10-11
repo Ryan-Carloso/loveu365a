@@ -1,6 +1,6 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 
-const { width } = Dimensions.get('window'); 
+const { width, height } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
   container: {
@@ -83,11 +83,17 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
   },
   image: {
-    width: width - 40,
-    height: (width - 40) * 1.2,
+    width: width > 768 ? width * 0.6 : width - 40,  // Ajuste para telas maiores
+    height: width > 768 ? (width * 0.6) * 1.2 : (width - 40) * 1.2,
     borderRadius: 16,
     marginBottom: 20,
     resizeMode: 'cover',
+    padding: 20,
+  },
+  imageContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+
   },
   noImageText: {
     fontSize: 16,

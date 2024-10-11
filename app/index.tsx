@@ -7,6 +7,8 @@ import styles from '../styles/styles';
 import CodeInput from '../componentes/codeInput';
 import ElapsedTime from '../componentes/elapsedTime';
 import { handleCodeSubmit } from '../util/handlesubmit';
+import { API_URL, API_KEY } from '@env';
+
 
 interface Elogio {
   text: string;
@@ -127,12 +129,9 @@ const App: React.FC = () => {
   }, [currentImageIndex, imageUrls]);
 
   const fetchData = async (randomString: string): Promise<void> => {
-    const API_URL = 'https://laqxbdncmapnhorlbbkg.supabase.co/rest/v1/users';
-    const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcXhiZG5jbWFwbmhvcmxiYmtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjY4NjE3MjUsImV4cCI6MjA0MjQzNzcyNX0.Zv-JETPTIq8X67KWcdFOG0yK9jtpszt7krJT082WyPU';
-
     try {
       const response: AxiosResponse<User[]> = await axios.get<User[]>(
-        `${API_URL}?random_string=eq.${randomString}`,
+        `${API_URL}/rest/v1/users?random_string=eq.${randomString}`,
         {
           headers: {
             Authorization: `Bearer ${API_KEY}`,
@@ -168,13 +167,9 @@ const App: React.FC = () => {
         }
 
         const imageUrls: string[] = JSON.parse(fetchedData.image_urls);
-        console.log('Image URLs fetched:', imageUrls);
-        if (imageUrls.length > 0) {
-          setImageUrls(imageUrls);
-          setCurrentImage(imageUrls[0]);
-        } else {
-          console.log('Image URLs array is empty.');
-        }
+        setImageUrls(imageUrls);
+        setCurrentImage(imageUrls[0]);
+        
 
         setCoupleName(fetchedData.couplename);
         if (!startDate) {
@@ -286,15 +281,16 @@ const App: React.FC = () => {
         )}
 
         {currentImage ? (
+          <View style={styles.imageContainer}>
           <Image
             style={styles.image}
-            source={{
-              uri: `https://laqxbdncmapnhorlbbkg.supabase.co/storage/v1/object/public/images/${currentImage}`,
-            }}
+            source={{ uri: currentImage }}
           />
+          </View>
         ) : (
           <Text style={styles.noImageText}>No image available.</Text>
         )}
+
 
         <ElapsedTime startDate={startDate} />
 

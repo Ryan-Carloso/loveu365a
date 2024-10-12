@@ -7,7 +7,6 @@ import styles from '../styles/styles';
 import CodeInput from '../componentes/codeInput';
 import ElapsedTime from '../componentes/elapsedTime';
 import { handleCodeSubmit } from '../util/handlesubmit';
-import { API_URL, API_KEY } from '@env';
 
 
 interface Elogio {
@@ -129,6 +128,9 @@ const App: React.FC = () => {
   }, [currentImageIndex, imageUrls]);
 
   const fetchData = async (randomString: string): Promise<void> => {
+    const API_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
+    const API_KEY = process.env.EXPO_PUBLIC_SUPABASE_KEY;
+
     try {
       const response: AxiosResponse<User[]> = await axios.get<User[]>(
         `${API_URL}/rest/v1/users?random_string=eq.${randomString}`,

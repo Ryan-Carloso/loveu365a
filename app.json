@@ -1,12 +1,14 @@
 {
   "expo": {
     "name": "loveu365a",
+    "entryPoint": "./app/index.tsx",
     "slug": "loveu365a",
     "version": "6.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "loveu365a",
     "userInterfaceStyle": "automatic",
+    
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -41,6 +43,8 @@
       "typedRoutes": true
     },
     "extra": {
+      "EXPO_PUBLIC_SUPABASE_URL": "https://oulptuvnjyeirppapauw.supabase.co",
+      "EXPO_PUBLIC_SUPABASE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91bHB0dXZuanllaXJwcGFwYXV3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyODY4MzA2NSwiZXhwIjoyMDQ0MjU5MDY1fQ.Jt_0z0XEEezXPi5GN6y5gpYVUUkgmtdvDNN_VKF70BU",
       "router": {
         "origin": false
       },

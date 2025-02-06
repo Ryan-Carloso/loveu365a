@@ -3,10 +3,10 @@ import { View, Text, Image, SafeAreaView, ScrollView, Alert, Linking } from 'rea
 import axios, { AxiosResponse } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
-import styles from '../styles/styles';
-import CodeInput from '../componentes/codeInput';
-import ElapsedTime from '../componentes/elapsedTime';
-import { handleCodeSubmit } from '../util/handlesubmit';
+import styles from '../../styles/styles';
+import CodeInput from '../../componentes/codeInput';
+import ElapsedTime from '../../componentes/elapsedTime';
+import { handleCodeSubmit } from '../../util/handlesubmit';
 
 
 interface Elogio {

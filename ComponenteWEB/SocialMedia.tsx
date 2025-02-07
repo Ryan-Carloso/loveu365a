@@ -24,7 +24,7 @@ const SocialMedia = () => {
         <TouchableOpacity onPress={() => openLink('https://www.tiktok.com/@make4ryan')} style={styles.iconButton}>
           <FontAwesome5 name="tiktok" size={32} color="black" />
         </TouchableOpacity>
-      </View>
+      </View> 
     </View>
   );
 };

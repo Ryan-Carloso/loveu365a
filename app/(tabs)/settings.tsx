@@ -9,16 +9,16 @@ registerTranslation('en', enGB);
 
 
 
-import Header from '../../ComponenteWEB/Header';
-import DateTimePicker from '../../ComponenteWEB/datetime';
+import Header from '@/ComponenteWEB/Header';
+import DateTimePicker from '@/ComponenteWEB/datetime';
 
-import Compliments from '../../ComponenteWEB/compliments';
-import ImgUpload from '../../ComponenteWEB/imgUpload';
-import Preview from '../../ComponenteWEB/preview';
+import Compliments from '@/ComponenteWEB/compliments';
+import ImgUpload from '@/ComponenteWEB/imgUpload';
+import Preview from '@/ComponenteWEB/preview';
 //import AlertGoPay from '@/functions/AlertGoPay';
-//import HowWorks from '@/components/HowWorks';
-//import FAQ from '@/components/FAQ';
-//import SocialMedia from '@/components/SocialMedia';
+import HowWorks from '@/ComponenteWEB/Howworks';
+import FAQ from '@/ComponenteWEB/FAQ';
+import SocialMedia from '@/ComponenteWEB/SocialMedia';
 
 
 
@@ -83,11 +83,11 @@ export default function App() {
         
       </View>
       
-{/*
+
       <HowWorks />
       <FAQ />
       <SocialMedia />
-      */}
+
     </ScrollView>
   );
 }
@@ -111,11 +111,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   mainContent: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     padding: 16,
   },
   formContainer: {
-    width: '50%',
+    
     paddingRight: 16,
   },
   title: {

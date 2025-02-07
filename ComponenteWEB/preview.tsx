@@ -36,7 +36,7 @@ const IPhoneMockup: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 const Notification: React.FC<{ compliment: string }> = ({ compliment }) => {
   return (
     <View style={styles.notificationContainer}>
-      
+      <Image source={require('@/assets/icon.png')}  style={styles.notificationIcon} />
       <View style={styles.notificationTextContainer}>
         <Text style={styles.notificationTime}>Now</Text>
         <Text style={styles.notificationTitle}>LOVEU365</Text>

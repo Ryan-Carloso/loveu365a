@@ -8,7 +8,6 @@
     "icon": "./assets/icon.png",
     "scheme": "loveu365a",
     "userInterfaceStyle": "automatic",
-    
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -20,7 +19,9 @@
       "infoPlist": {
         "CFBundleURLTypes": [
           {
-            "CFBundleURLSchemes": ["loveu365a"] 
+            "CFBundleURLSchemes": [
+              "loveu365a"
+            ]
           }
         ]
       }
@@ -29,7 +30,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.ryancarlos11.loveu365a"
     },
     "web": {
       "bundler": "metro",

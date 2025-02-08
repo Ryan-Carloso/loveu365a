@@ -8,14 +8,6 @@ import CodeInput from '../../componentes/codeInput';
 import ElapsedTime from '../../componentes/elapsedTime';
 import { handleCodeSubmit } from '../../util/handlesubmit';
 
-import { Mixpanel } from "mixpanel-react-native";
- 
-// Set up an instance of Mixpanel
-const trackAutomaticEvents = false;
-const mixpanel = new Mixpanel("20f486121aef37c60816cf81a59fa412", trackAutomaticEvents);
-mixpanel.init();
-
-
 interface Elogio {
   text: string;
 }

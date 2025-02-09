@@ -7,6 +7,7 @@ import styles from '../../styles/styles';
 import CodeInput from '../../componentes/codeInput';
 import ElapsedTime from '../../componentes/elapsedTime';
 import { handleCodeSubmit } from '../../util/handlesubmit';
+import { trackVisit } from '@/componentes/trackvisit';
 
 interface Elogio {
   text: string;
@@ -35,6 +36,8 @@ const App: React.FC = () => {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   useEffect(() => {
+    trackVisit('Entrou na Index');
+
     const loadCode = async () => {
       try {
         const storedCode = await AsyncStorage.getItem('userCode');

@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Alert, Pressable, Clipboard } 
 import styles from '../styles/styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Linking } from 'react-native';
+import { Link, router } from 'expo-router';
 
 interface CodeInputProps {
   onCodeSubmit: (code: string) => void;
@@ -102,10 +103,15 @@ const CodeInput: React.FC<CodeInputProps> = ({ onCodeSubmit }) => {
           <Text style={styles.submitButtonText}>Save Code</Text>
         </TouchableOpacity>
       </View>
-      
-      <Pressable onPress={handleCopyPress}>
+      <Link href="/settings" asChild>
+      <TouchableOpacity >
+      <Text style={styles.TextBelow}>Dont has one? click here</Text>
+
+      </TouchableOpacity>
+      </Link>
+      <TouchableOpacity onPress={handleCopyPress}>
         <Text style={styles.TextBelow}>To try a code for test, type "code" and click save</Text>
-      </Pressable>
+      </TouchableOpacity>
     </View>
   );
 };

@@ -62,6 +62,7 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
   TextBelow: {
+    marginTop: 5,
     fontSize: 16,
     fontWeight: '800',
     color: '#D6336C',
